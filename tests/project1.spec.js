@@ -47,6 +47,7 @@ test.beforeEach("login", async ({ page }) => {
 test("add product in cart", async ({ page }) => {
   const productname = "ZARA COAT 3";
   const products = page.locator(".card");
+  await products.nth(0).waitFor();
   let productCount = await products.count();
   for (let i = 0; i < productCount; i++) {
     const productName = await products.locator("b").nth(i).textContent();
@@ -65,9 +66,51 @@ test("add product in cart", async ({ page }) => {
     .isVisible();
   expect(isProductPresent).toBeTruthy();
 
-
   // click cheackout
 
   await page.locator("button:has-text('Checkout')").click();
-  
+  await page.getByPlaceholder("Select Country").pressSequentially("ind");
+  const dropdown = page.locator("section .ta-results");
+  await dropdown.waitFor();
+  const countries = dropdown.locator("button");
+  const count = await countries.count();
+  console.log(count);
+  for (let i = 0; i < count; i++) {
+    const country = await countries.nth(i).textContent();
+    console.log(country);
+    if (country === " India") {
+      await dropdown.locator("button").nth(i).click();
+      break;
+    }
+  }
+  await page.locator(".action__submit").click();
+
+  const sucessOrder = page.locator(".hero-primary");
+  await expect(sucessOrder).toHaveText(" Thankyou for the order. ");
+  const orderId = await page
+    .locator(".em-spacer-1 .ng-star-inserted")
+    .textContent();
+
+  console.log(orderId);
+
+  const myorder = page.locator("li [routerlink*='myorders']");
+  await myorder.click();
+  await page.locator("tbody").waitFor();
+  // verify order by order id
+
+  const allOrderHistory = page.locator("tbody .ng-star-inserted");
+  const allOrderHistoryCount = await allOrderHistory.count();
+  page.pause();
+  for (let i = 0; i < allOrderHistoryCount; i++) {
+    const orderid = await allOrderHistory.nth(i).locator("th").textContent();
+    console.log(orderId);
+    if (orderId.includes(orderid)) {
+      await allOrderHistory.nth(i).locator("td .btn-primary").click();
+      break;
+    }
+  }
+
+  await expect(page.locator("div .tagline")).toHaveText(
+    "Thank you for Shopping With Us",
+  );
 });
