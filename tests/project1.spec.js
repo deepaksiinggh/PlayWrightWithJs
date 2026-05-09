@@ -64,4 +64,10 @@ test("add product in cart", async ({ page }) => {
     .locator("h3:has-text('ZARA COAT 3')")
     .isVisible();
   expect(isProductPresent).toBeTruthy();
+
+
+  // click cheackout
+
+  await page.locator("button:has-text('Checkout')").click();
+  
 });
